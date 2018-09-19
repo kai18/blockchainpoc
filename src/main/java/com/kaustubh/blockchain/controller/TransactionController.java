@@ -1,5 +1,11 @@
 package com.kaustubh.blockchain.controller;
 
+import com.kaustubh.blockchain.model.Car;
+import com.kaustubh.blockchain.model.Receipt;
+import com.kaustubh.blockchain.model.Transaction;
+import com.kaustubh.blockchain.service.CarService;
+import com.kaustubh.blockchain.service.TransactionService;
+import java.io.IOException;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,43 +18,38 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kaustubh.blockchain.model.Car;
-import com.kaustubh.blockchain.model.Receipt;
-import com.kaustubh.blockchain.model.Transaction;
-import com.kaustubh.blockchain.service.CarService;
-import com.kaustubh.blockchain.service.TransactionService;
-
 @CrossOrigin
 @RestController
 public class TransactionController {
 
-	public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+  public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-	CarService carService;
-	TransactionService transactionService;
+  CarService carService;
+  TransactionService transactionService;
 
-	@Autowired
-	public TransactionController(CarService carService, TransactionService transactionService) {
-		super();
-		this.carService = carService;
-		this.transactionService = transactionService;
-	}
+  @Autowired
+  public TransactionController(CarService carService, TransactionService transactionService) {
+    super();
+    this.carService = carService;
+    this.transactionService = transactionService;
+  }
 
-	@PostMapping("/buyCar")
-	public ResponseEntity<String> buyCar(@RequestBody Transaction transactionRequest) {
+  @PostMapping("/buyCar")
+  public ResponseEntity<String> buyCar(@RequestBody Transaction transactionRequest) throws IOException {
 
-		Receipt receipt = transactionService.buyCar(transactionRequest);
-		return ResponseEntity.ok(receipt.getBlockNumber().toString());
-	}
+    String receipt = transactionService.buyCar(transactionRequest);
+    return ResponseEntity.ok(receipt);
+  }
 
-	@GetMapping("/getCar")
-	public ResponseEntity<Car> getCar(@RequestParam String vin) throws Exception {
-		Car car = transactionService.getCar(vin);
+  @GetMapping("/getCar")
+  public ResponseEntity<Car> getCar(@RequestParam String vin) throws Exception {
+    Car car = transactionService.getCar(vin);
 
-		if(Objects.isNull(car))
-			car = carService.getCar(vin);
+    if (Objects.isNull(car)) {
+      car = carService.getCar(vin);
+    }
 
-		return ResponseEntity.ok().body(car);
-	}
+    return ResponseEntity.ok().body(car);
+  }
 
 }

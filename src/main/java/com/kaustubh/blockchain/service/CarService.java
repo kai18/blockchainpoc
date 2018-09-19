@@ -20,7 +20,8 @@ public class CarService {
   }
 
   public Car saveCar(Car car) {
-    carRepository.findByVin(car.getVin()).orElseThrow(() -> new DuplicateKeyException("This car is already registered"));
+    carRepository.findByVin(car.getVin())
+        .orElseThrow(() -> new DuplicateKeyException("This car is already registered"));
     return carRepository.save(car);
   }
 

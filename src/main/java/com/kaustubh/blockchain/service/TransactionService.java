@@ -1,9 +1,22 @@
 package com.kaustubh.blockchain.service;
 
+import com.bigchaindb.builders.BigchainDbTransactionBuilder;
+import com.bigchaindb.constants.Operations;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kaustubh.blockchain.model.Car;
+import com.kaustubh.blockchain.model.Receipt;
+import com.kaustubh.blockchain.model.Transaction;
 import com.kaustubh.blockchain.repository.CarRepository;
+import com.kaustubh.blockchain.repository.ReceiptRepository;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.KeyPair;
 import java.util.List;
-
+import java.util.Map;
+import java.util.TreeMap;
+import net.i2p.crypto.eddsa.EdDSAPrivateKey;
+import net.i2p.crypto.eddsa.EdDSAPublicKey;
+import net.i2p.crypto.eddsa.KeyPairGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,73 +25,60 @@ import org.springframework.stereotype.Service;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple5;
 
-import com.kaustubh.blockchain.contract.CarTransaction;
-import com.kaustubh.blockchain.model.Car;
-import com.kaustubh.blockchain.model.Receipt;
-import com.kaustubh.blockchain.model.Transaction;
-import com.kaustubh.blockchain.repository.ReceiptRepository;
-
 @Service
 public class TransactionService {
 
-	public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+  public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-	ReceiptRepository receiptRepository;
-	CarTransaction carTransaction;
-	CarService carService;
-	CarRepository carRepository;
+  ReceiptRepository receiptRepository;
+  CarService carService;
+  CarRepository carRepository;
 
-	@Autowired
-	public TransactionService(ReceiptRepository receiptRepository, CarTransaction carTransaction,
-			CarService carService, CarRepository carRepository) {
-		super();
-		this.receiptRepository = receiptRepository;
-		this.carTransaction = carTransaction;
-		this.carService = carService;
-		this.carRepository = carRepository;
-	}
+  @Autowired
+  public TransactionService(ReceiptRepository receiptRepository,
+      CarService carService, CarRepository carRepository) {
+    super();
+    this.receiptRepository = receiptRepository;
+    this.carService = carService;
+    this.carRepository = carRepository;
+  }
 
-	public Receipt buyCar(Transaction transactionRequest) {
-		TransactionReceipt receipt = null;
-		Car car = null;
-		try {
+  public String buyCar(Transaction transactionRequest) throws IOException {
+    TransactionReceipt receipt = null;
+    Car car = null;
+    try {
 
-			car = carService.getCar(transactionRequest.getVin());
-			receipt = carTransaction.buy(transactionRequest.getSeller(), transactionRequest.getBuyer(),
-					BigInteger.valueOf(transactionRequest.getPrice()), transactionRequest.getVin()).send();
-		} catch (DataRetrievalFailureException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+      car = carService.getCar(transactionRequest.getVin());
 
-		Receipt transactionReceipt = new Receipt();
-		transactionReceipt.setCar(car);
-		transactionReceipt.setBlockNumber(receipt.getBlockNumber());
-		receiptRepository.save(transactionReceipt);
+    } catch (DataRetrievalFailureException e) {
+      e.printStackTrace();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
-		return transactionReceipt;
-	}
+    ObjectMapper objectMapper = new ObjectMapper();
+    KeyPairGenerator keyPairGenerator = new KeyPairGenerator();
+    KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-	public Car getCar(String vin) {
+    Map<String, String> assetData = objectMapper.convertValue(car, TreeMap.class);
+    com.bigchaindb.model.Transaction transaction = BigchainDbTransactionBuilder
+        .init().addAssets(car, Car.class)
+        .operation(Operations.CREATE)
+        .buildAndSign((EdDSAPublicKey) keyPair.getPublic(), (EdDSAPrivateKey)keyPair.getPrivate())
+        .sendTransaction();
 
-		Tuple5<String, String, List<String>, BigInteger, BigInteger> carTuple = null;
-		try {
-			carTuple = carTransaction.getCarInfo(vin).send();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		Car car = carService.getCar(vin);
+    return transaction.toString();
+  }
 
-		car.setVin(vin);
-		if(!carTuple.getValue1().equals("0x0000000000000000000000000000000000000000"))
-			car.setCurrentOwner(carTuple.getValue1());
-		car.setLastOwner(carTuple.getValue2());
-		car.setPreviousOwners(carTuple.getValue3());
-		car.setNumberOfTimesSold(carTuple.getValue4());
-		car.setLastSoldPrice(carTuple.getValue5());
-		carRepository.save(car);
-		return car;
+  public Car getCar(String vin) {
 
-	}
+    Tuple5<String, String, List<String>, BigInteger, BigInteger> carTuple = null;
+
+    Car car = carService.getCar(vin);
+
+    car.setVin(vin);
+    carRepository.save(car);
+    return car;
+
+  }
 }
