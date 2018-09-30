@@ -16,16 +16,15 @@ public class Car {
   @Id
   private String vin;
 
+  private String blockchainId;
+
   private String model;
   private String color;
   private String modelYear;
   private String company;
-
-  private String currentOwner;
   private BigInteger lastSoldPrice;
-  private List<String> previousOwners;
-  private String lastOwner;
   private BigInteger numberOfTimesSold;
+  private BigInteger kilometersTravelled;
 
   public String getVin() {
     return vin;
@@ -33,6 +32,14 @@ public class Car {
 
   public void setVin(String vin) {
     this.vin = vin;
+  }
+
+  public String getBlockchainId() {
+    return blockchainId;
+  }
+
+  public void setBlockchainId(String blockchainId) {
+    this.blockchainId = blockchainId;
   }
 
   public String getModel() {
@@ -67,36 +74,12 @@ public class Car {
     this.company = company;
   }
 
-  public String getCurrentOwner() {
-    return currentOwner;
-  }
-
-  public void setCurrentOwner(String currentOwner) {
-    this.currentOwner = currentOwner;
-  }
-
   public BigInteger getLastSoldPrice() {
     return lastSoldPrice;
   }
 
   public void setLastSoldPrice(BigInteger lastSoldPrice) {
     this.lastSoldPrice = lastSoldPrice;
-  }
-
-  public List<String> getPreviousOwners() {
-    return previousOwners;
-  }
-
-  public void setPreviousOwners(List<String> previousOwners) {
-    this.previousOwners = previousOwners;
-  }
-
-  public String getLastOwner() {
-    return lastOwner;
-  }
-
-  public void setLastOwner(String lastOwner) {
-    this.lastOwner = lastOwner;
   }
 
   public BigInteger getNumberOfTimesSold() {
@@ -107,4 +90,11 @@ public class Car {
     this.numberOfTimesSold = numberOfTimesSold;
   }
 
+  public BigInteger getKilometersTravelled() {
+    return kilometersTravelled;
+  }
+
+  public void setKilometersTravelled(BigInteger kilometersTravelled) {
+    this.kilometersTravelled = kilometersTravelled;
+  }
 }

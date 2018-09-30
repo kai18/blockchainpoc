@@ -1,11 +1,11 @@
 package com.kaustubh.blockchain.controller;
 
 import com.kaustubh.blockchain.model.Car;
-import com.kaustubh.blockchain.model.Receipt;
-import com.kaustubh.blockchain.model.Transaction;
+import com.kaustubh.blockchain.model.AssetTransaction;
 import com.kaustubh.blockchain.service.CarService;
 import com.kaustubh.blockchain.service.TransactionService;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +35,10 @@ public class TransactionController {
   }
 
   @PostMapping("/buyCar")
-  public ResponseEntity<String> buyCar(@RequestBody Transaction transactionRequest) throws IOException {
+  public ResponseEntity<String> buyCar(@RequestBody AssetTransaction assetTransactionRequest)
+      throws IOException, NoSuchAlgorithmException {
 
-    String receipt = transactionService.buyCar(transactionRequest);
+    String receipt = transactionService.buyCar(assetTransactionRequest);
     return ResponseEntity.ok(receipt);
   }
 

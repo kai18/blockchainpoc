@@ -1,7 +1,12 @@
 package com.kaustubh.blockchain.model;
 
-public class Transaction {
+import com.bigchaindb.model.Transaction;
+import org.neo4j.ogm.annotation.Id;
 
+public class AssetTransaction extends Transaction {
+
+  @Id
+  public String id;
   private String seller;
   private String buyer;
   private Long price;
