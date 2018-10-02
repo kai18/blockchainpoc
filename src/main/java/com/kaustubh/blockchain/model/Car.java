@@ -1,5 +1,6 @@
 package com.kaustubh.blockchain.model;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 import javax.validation.constraints.NotEmpty;
@@ -9,7 +10,7 @@ import org.neo4j.ogm.annotation.NodeEntity;
 
 @NotNull
 @NodeEntity
-public class Car {
+public class Car implements Serializable {
 
   @NotNull
   @NotEmpty
@@ -96,5 +97,20 @@ public class Car {
 
   public void setKilometersTravelled(BigInteger kilometersTravelled) {
     this.kilometersTravelled = kilometersTravelled;
+  }
+
+  @Override
+  public String toString() {
+    return "Car{" +
+        "vin='" + vin + '\'' +
+        ", blockchainId='" + blockchainId + '\'' +
+        ", model='" + model + '\'' +
+        ", color='" + color + '\'' +
+        ", modelYear='" + modelYear + '\'' +
+        ", company='" + company + '\'' +
+        ", lastSoldPrice=" + lastSoldPrice +
+        ", numberOfTimesSold=" + numberOfTimesSold +
+        ", kilometersTravelled=" + kilometersTravelled +
+        '}';
   }
 }

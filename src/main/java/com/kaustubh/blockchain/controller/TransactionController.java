@@ -6,6 +6,7 @@ import com.kaustubh.blockchain.service.CarService;
 import com.kaustubh.blockchain.service.TransactionService;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +35,14 @@ public class TransactionController {
     this.transactionService = transactionService;
   }
 
+  @PostMapping
+  public ResponseEntity<String> confirmTransaction(@RequestBody String transactionId)
+      throws InvalidKeySpecException, IOException {
+    return ResponseEntity.ok(this.transactionService.confirmTransaction(transactionId));
+  }
   @PostMapping("/buyCar")
   public ResponseEntity<String> buyCar(@RequestBody AssetTransaction assetTransactionRequest)
-      throws IOException, NoSuchAlgorithmException {
+      throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
 
     String receipt = transactionService.buyCar(assetTransactionRequest);
     return ResponseEntity.ok(receipt);

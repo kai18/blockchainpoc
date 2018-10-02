@@ -6,8 +6,10 @@ import com.kaustubh.blockchain.repository.UserRepository;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import net.i2p.crypto.eddsa.KeyPairGenerator;
+import net.i2p.crypto.eddsa.Utils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,7 +28,14 @@ public class UserService {
     KeyPairGenerator keyPairGenerator = new KeyPairGenerator();
     KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-    user.setPrivateKey(keyPair.getPrivate().toString());
-    return user;
+    user.setPrivateKey(Utils.bytesToHex(keyPair.getPrivate().getEncoded()));
+    user.setPublicKey(Utils.bytesToHex(keyPair.getPublic().getEncoded()));
+
+    return userRepository.save(user);
+  }
+
+  public User getUser(String publicKey){
+    return userRepository.findById(publicKey)
+        .orElseThrow(()-> new InvalidDataAccessResourceUsageException("User not present"));
   }
 }

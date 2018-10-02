@@ -1,21 +1,27 @@
 package com.kaustubh.blockchain.service;
 
 import com.bigchaindb.api.AssetsApi;
+import com.bigchaindb.api.TransactionsApi;
 import com.bigchaindb.builders.BigchainDbTransactionBuilder;
 import com.bigchaindb.constants.Operations;
 import com.bigchaindb.model.Asset;
 import com.bigchaindb.model.Assets;
+import com.bigchaindb.model.FulFill;
 import com.bigchaindb.model.Transaction;
-import com.kaustubh.blockchain.model.Car;
+import com.bigchaindb.model.Transactions;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.kaustubh.blockchain.model.AssetTransaction;
+import com.kaustubh.blockchain.model.Car;
+import com.kaustubh.blockchain.model.User;
+import com.kaustubh.blockchain.repository.AssetTransactionRepositiory;
 import com.kaustubh.blockchain.repository.CarRepository;
 import com.kaustubh.blockchain.repository.ReceiptRepository;
+import com.kaustubh.blockchain.utils.KeyUtil;
 import java.io.IOException;
-import java.security.KeyPair;
+import java.lang.reflect.Type;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
-import net.i2p.crypto.eddsa.EdDSAPrivateKey;
-import net.i2p.crypto.eddsa.EdDSAPublicKey;
-import net.i2p.crypto.eddsa.KeyPairGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -30,38 +36,63 @@ public class TransactionService {
   ReceiptRepository receiptRepository;
   CarService carService;
   CarRepository carRepository;
+  UserService userService;
+  AssetTransactionRepositiory assetTransactionRepositiory;
 
   @Autowired
   public TransactionService(ReceiptRepository receiptRepository,
-      CarService carService, CarRepository carRepository) {
+      CarService carService, CarRepository carRepository, UserService userService,
+      AssetTransactionRepositiory assetTransactionRepositiory) {
     super();
     this.receiptRepository = receiptRepository;
     this.carService = carService;
     this.carRepository = carRepository;
+    this.userService = userService;
+    this.assetTransactionRepositiory = assetTransactionRepositiory;
   }
 
-  public String buyCar(AssetTransaction assetTransactionRequest) throws IOException {
-    KeyPairGenerator keyPairGenerator = new KeyPairGenerator();
-    KeyPair keyPair = keyPairGenerator.generateKeyPair();
-    String amount  = "1";
+  public String confirmTransaction(String transactionId)
+      throws InvalidKeySpecException, IOException {
+    AssetTransaction assetTransaction = assetTransactionRepositiory.findById(transactionId).get();
+    User owner = userService.getUser(assetTransaction.getSeller());
+    User buyer = userService.getUser(assetTransaction.getSeller());
+    String amount = "1";
 
-    Car car = carService.getCar(assetTransactionRequest.getVin());
-    //Transaction transferTransaction = BigchainDbTransactionBuilder.
-      //  init().
-       // addAssets(car.getBlockchainId(), String.class)
+    Car car = carService.getCar(assetTransaction.getVin());
+    String assetId = car.getBlockchainId();
+    final FulFill fulFill = new FulFill();
+    fulFill.setTransactionId(assetId);
+    fulFill.setOutputIndex("0");
+    Transaction transferTransaction = BigchainDbTransactionBuilder.
+        init().
+        addInput(null, fulFill,
+            KeyUtil.generatePublicKey(owner.getPublicKey()))
+        .addOutput(null, (KeyUtil.generatePublicKey(buyer.getPublicKey())))
+        .addAssets(car.getBlockchainId(), String.class)
+        .operation(Operations.CREATE)
+        .buildAndSign(KeyUtil.generatePublicKey(owner.getPublicKey()),
+            KeyUtil.generatePrivateKey(owner.getPrivateKey()))
+        .sendTransaction();
 
+    return transferTransaction.getId();
+  }
 
-    return null;
+  public String buyCar(AssetTransaction assetTransactionRequest)
+      throws IOException, InvalidKeySpecException {
+    assetTransactionRepositiory.save(assetTransactionRequest);
+    return assetTransactionRequest.toString();
   }
 
 
-  public void createAsset(Car car) throws IOException{
-    KeyPairGenerator keyPairGenerator = new KeyPairGenerator();
-    KeyPair keyPair = keyPairGenerator.generateKeyPair();
-    Transaction assetTransaction  =  BigchainDbTransactionBuilder
+  public void createAsset(Car car) throws IOException, InvalidKeySpecException {
+    User owner = userService.getUser(
+        "302a300506032b65700321005bdc57cf7049971b947da80d9266ba86b48a735ee33c4452fe87c8f5ca492eaf");
+
+    Transaction assetTransaction = BigchainDbTransactionBuilder
         .init().addAssets(car, Car.class)
         .operation(Operations.CREATE)
-        .buildAndSign((EdDSAPublicKey) keyPair.getPublic(), (EdDSAPrivateKey)keyPair.getPrivate())
+        .buildAndSign(KeyUtil.generatePublicKey(owner.getPublicKey()),
+            KeyUtil.generatePrivateKey(owner.getPrivateKey()))
         .sendTransaction();
 
     LOGGER.info(assetTransaction.toString());
@@ -73,10 +104,16 @@ public class TransactionService {
     Assets assets = AssetsApi.getAssets(vin);
     List<Asset> asset = assets.getAssets();
     Car car = new Car();
+    Gson gson = new Gson();
     BeanUtils.copyProperties(assets.getAssets().get(0), car);
+    Type type = new TypeToken<Car>() {
+    }.getType();
+    String carJson = gson.toJson(assets.getAssets().get(0).getData());
+    car = gson.fromJson(carJson, Car.class);
 
-    car = Car.class.cast(assets.getAssets().get(0).getData());
-    LOGGER.info(assets.getAssets().get(0).getData().toString());
+    Transactions transactions = TransactionsApi
+        .getTransactionsByAssetId(car.getBlockchainId(), Operations.TRANSFER);
+    LOGGER.info(car.toString());
     return car;
   }
 }

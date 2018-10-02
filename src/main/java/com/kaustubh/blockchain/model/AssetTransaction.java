@@ -2,7 +2,9 @@ package com.kaustubh.blockchain.model;
 
 import com.bigchaindb.model.Transaction;
 import org.neo4j.ogm.annotation.Id;
+import org.neo4j.ogm.annotation.NodeEntity;
 
+@NodeEntity
 public class AssetTransaction extends Transaction {
 
   @Id
