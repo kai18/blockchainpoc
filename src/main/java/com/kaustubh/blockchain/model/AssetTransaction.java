@@ -1,11 +1,10 @@
 package com.kaustubh.blockchain.model;
 
-import com.bigchaindb.model.Transaction;
 import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.NodeEntity;
 
 @NodeEntity
-public class AssetTransaction extends Transaction {
+public class AssetTransaction {
 
   @Id
   public String id;
@@ -13,6 +12,14 @@ public class AssetTransaction extends Transaction {
   private String buyer;
   private Long price;
   private String vin;
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
 
   public String getSeller() {
     return seller;

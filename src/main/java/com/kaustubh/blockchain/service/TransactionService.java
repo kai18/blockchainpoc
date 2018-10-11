@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -55,11 +56,11 @@ public class TransactionService {
       throws InvalidKeySpecException, IOException {
     AssetTransaction assetTransaction = assetTransactionRepositiory.findById(transactionId).get();
     User owner = userService.getUser(assetTransaction.getSeller());
-    User buyer = userService.getUser(assetTransaction.getSeller());
+    User buyer = userService.getUser(assetTransaction.getBuyer());
     String amount = "1";
 
     Car car = carService.getCar(assetTransaction.getVin());
-    String assetId = car.getBlockchainId();
+    String assetId = car.getId();
     final FulFill fulFill = new FulFill();
     fulFill.setTransactionId(assetId);
     fulFill.setOutputIndex("0");
@@ -68,8 +69,8 @@ public class TransactionService {
         addInput(null, fulFill,
             KeyUtil.generatePublicKey(owner.getPublicKey()))
         .addOutput(null, (KeyUtil.generatePublicKey(buyer.getPublicKey())))
-        .addAssets(car.getBlockchainId(), String.class)
-        .operation(Operations.CREATE)
+        .addAssets(car, Car.class)
+        .operation(Operations.TRANSFER)
         .buildAndSign(KeyUtil.generatePublicKey(owner.getPublicKey()),
             KeyUtil.generatePrivateKey(owner.getPrivateKey()))
         .sendTransaction();
@@ -79,14 +80,16 @@ public class TransactionService {
 
   public String buyCar(AssetTransaction assetTransactionRequest)
       throws IOException, InvalidKeySpecException {
+    assetTransactionRequest.setId(UUID.randomUUID().toString());
     assetTransactionRepositiory.save(assetTransactionRequest);
+    //this.confirmTransaction(assetTransactionRequest.getId());
     return assetTransactionRequest.toString();
   }
 
 
   public void createAsset(Car car) throws IOException, InvalidKeySpecException {
     User owner = userService.getUser(
-        "302a300506032b65700321005bdc57cf7049971b947da80d9266ba86b48a735ee33c4452fe87c8f5ca492eaf");
+        "302a300506032b6570032100c49d35f0c8c4c2d9f35840850b378073a578122c74b03ae7333b4dd58037a1df");
 
     Transaction assetTransaction = BigchainDbTransactionBuilder
         .init().addAssets(car, Car.class)
@@ -96,7 +99,7 @@ public class TransactionService {
         .sendTransaction();
 
     LOGGER.info(assetTransaction.toString());
-    car.setBlockchainId(assetTransaction.getId());
+    car.setId(assetTransaction.getId());
     carRepository.save(car);
   }
 
@@ -112,7 +115,8 @@ public class TransactionService {
     car = gson.fromJson(carJson, Car.class);
 
     Transactions transactions = TransactionsApi
-        .getTransactionsByAssetId(car.getBlockchainId(), Operations.TRANSFER);
+        .getTransactionsByAssetId(carRepository.findById(car.getVin()).get().getId(),
+            Operations.TRANSFER);
     LOGGER.info(car.toString());
     return car;
   }

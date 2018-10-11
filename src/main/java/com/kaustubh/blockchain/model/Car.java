@@ -2,7 +2,6 @@ package com.kaustubh.blockchain.model;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import org.neo4j.ogm.annotation.Id;
@@ -17,7 +16,7 @@ public class Car implements Serializable {
   @Id
   private String vin;
 
-  private String blockchainId;
+  private String id;
 
   private String model;
   private String color;
@@ -35,12 +34,12 @@ public class Car implements Serializable {
     this.vin = vin;
   }
 
-  public String getBlockchainId() {
-    return blockchainId;
+  public String getId() {
+    return id;
   }
 
-  public void setBlockchainId(String blockchainId) {
-    this.blockchainId = blockchainId;
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getModel() {
@@ -103,7 +102,7 @@ public class Car implements Serializable {
   public String toString() {
     return "Car{" +
         "vin='" + vin + '\'' +
-        ", blockchainId='" + blockchainId + '\'' +
+        ", id='" + id + '\'' +
         ", model='" + model + '\'' +
         ", color='" + color + '\'' +
         ", modelYear='" + modelYear + '\'' +
