@@ -1,14 +1,12 @@
 package com.kaustubh.blockchain.service;
 
 import com.bigchaindb.api.AssetsApi;
-import com.bigchaindb.api.TransactionsApi;
 import com.bigchaindb.builders.BigchainDbTransactionBuilder;
 import com.bigchaindb.constants.Operations;
 import com.bigchaindb.model.Asset;
 import com.bigchaindb.model.Assets;
 import com.bigchaindb.model.FulFill;
 import com.bigchaindb.model.Transaction;
-import com.bigchaindb.model.Transactions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.kaustubh.blockchain.model.AssetTransaction;
@@ -107,16 +105,20 @@ public class TransactionService {
     Assets assets = AssetsApi.getAssets(vin);
     List<Asset> asset = assets.getAssets();
     Car car = new Car();
-    Gson gson = new Gson();
-    BeanUtils.copyProperties(assets.getAssets().get(0), car);
-    Type type = new TypeToken<Car>() {
-    }.getType();
-    String carJson = gson.toJson(assets.getAssets().get(0).getData());
-    car = gson.fromJson(carJson, Car.class);
+    if (assets.size() != 0) {
+      Gson gson = new Gson();
+      BeanUtils.copyProperties(assets.getAssets().get(0), car);
+      Type type = new TypeToken<Car>() {
+      }.getType();
+      String carJson = gson.toJson(assets.getAssets().get(0).getData());
+      car = gson.fromJson(carJson, Car.class);
+    } else {
+      car = carRepository.findByVin(vin).get();
+    }
 
-    Transactions transactions = TransactionsApi
+    /*Transactions transactions = TransactionsApi
         .getTransactionsByAssetId(carRepository.findById(car.getVin()).get().getId(),
-            Operations.TRANSFER);
+            Operations.TRANSFER);*/
     LOGGER.info(car.toString());
     return car;
   }
