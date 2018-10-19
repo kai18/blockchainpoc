@@ -12,6 +12,7 @@ public class AssetTransaction {
   private String buyer;
   private Long price;
   private String vin;
+  private boolean complete = false;
 
   public String getId() {
     return id;
@@ -53,4 +54,11 @@ public class AssetTransaction {
     this.vin = vin;
   }
 
+  public boolean isComplete() {
+    return complete;
+  }
+
+  public void setComplete(boolean complete) {
+    this.complete = complete;
+  }
 }

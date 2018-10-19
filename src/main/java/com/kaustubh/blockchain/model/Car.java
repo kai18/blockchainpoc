@@ -22,9 +22,6 @@ public class Car implements Serializable {
   private String color;
   private String modelYear;
   private String company;
-  private BigInteger lastSoldPrice;
-  private BigInteger numberOfTimesSold;
-  private BigInteger kilometersTravelled;
 
   public String getVin() {
     return vin;
@@ -74,30 +71,6 @@ public class Car implements Serializable {
     this.company = company;
   }
 
-  public BigInteger getLastSoldPrice() {
-    return lastSoldPrice;
-  }
-
-  public void setLastSoldPrice(BigInteger lastSoldPrice) {
-    this.lastSoldPrice = lastSoldPrice;
-  }
-
-  public BigInteger getNumberOfTimesSold() {
-    return numberOfTimesSold;
-  }
-
-  public void setNumberOfTimesSold(BigInteger numberOfTimesSold) {
-    this.numberOfTimesSold = numberOfTimesSold;
-  }
-
-  public BigInteger getKilometersTravelled() {
-    return kilometersTravelled;
-  }
-
-  public void setKilometersTravelled(BigInteger kilometersTravelled) {
-    this.kilometersTravelled = kilometersTravelled;
-  }
-
   @Override
   public String toString() {
     return "Car{" +
@@ -107,9 +80,6 @@ public class Car implements Serializable {
         ", color='" + color + '\'' +
         ", modelYear='" + modelYear + '\'' +
         ", company='" + company + '\'' +
-        ", lastSoldPrice=" + lastSoldPrice +
-        ", numberOfTimesSold=" + numberOfTimesSold +
-        ", kilometersTravelled=" + kilometersTravelled +
         '}';
   }
 }

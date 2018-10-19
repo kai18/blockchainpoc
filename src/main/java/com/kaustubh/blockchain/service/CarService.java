@@ -5,6 +5,8 @@ import com.bigchaindb.constants.Operations;
 import com.bigchaindb.model.Transaction;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kaustubh.blockchain.model.Car;
+import com.kaustubh.blockchain.model.CarInformation;
+import com.kaustubh.blockchain.repository.CarInformationRepository;
 import com.kaustubh.blockchain.repository.CarRepository;
 import java.io.IOException;
 import java.security.KeyPair;
@@ -23,11 +25,13 @@ import org.springframework.stereotype.Service;
 public class CarService {
 
   CarRepository carRepository;
+  CarInformationRepository carInformationRepository;
 
   @Autowired
-  public CarService(CarRepository carRepository) {
+  public CarService(CarRepository carRepository, CarInformationRepository carInformationRepository) {
     super();
     this.carRepository = carRepository;
+    this.carInformationRepository = carInformationRepository;
   }
 
   public Car saveCar(Car car) throws IOException {
@@ -42,7 +46,7 @@ public class CarService {
         .orElseThrow(() -> new DataRetrievalFailureException("No Car found with vin " + vin));
   }
 
-  public List<Car> getAllCars() {
-    return (List<Car>) (carRepository.findAll());
+  public List<CarInformation> getAllCars() {
+    return (List<CarInformation>) carInformationRepository.findAll();
   }
 }

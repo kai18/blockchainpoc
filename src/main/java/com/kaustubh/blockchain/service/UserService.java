@@ -34,8 +34,8 @@ public class UserService {
     return userRepository.save(user);
   }
 
-  public User getUser(String publicKey){
-    return userRepository.findById(publicKey)
+  public User getUser(String email){
+    return userRepository.findByEmail(email)
         .orElseThrow(()-> new InvalidDataAccessResourceUsageException("User not present"));
   }
 }

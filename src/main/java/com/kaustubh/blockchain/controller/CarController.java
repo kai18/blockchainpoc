@@ -1,13 +1,13 @@
 package com.kaustubh.blockchain.controller;
 
 import com.kaustubh.blockchain.model.Car;
+import com.kaustubh.blockchain.model.CarInformation;
 import com.kaustubh.blockchain.service.CarService;
 import com.kaustubh.blockchain.service.TransactionService;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,15 +27,13 @@ public class CarController {
   TransactionService transactionService;
 
   @PostMapping("register-car")
-  public ResponseEntity<Car> registerCar(@RequestBody Car car)
-      throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
-    Car savedCar = carService.saveCar(car);
-    transactionService.createAsset(car);
-    return ResponseEntity.ok().body(savedCar);
+  public ResponseEntity<CarInformation> registerCar(@RequestBody CarInformation carInformation)
+      throws IOException, InvalidKeySpecException {
+    return ResponseEntity.ok().body(transactionService.createAsset(carInformation));
   }
 
   @GetMapping("get-cars")
-  public List<Car> getAllCars() {
+  public List<CarInformation> getAllCars() {
     return carService.getAllCars();
   }
 

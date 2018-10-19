@@ -1,13 +1,11 @@
 package com.kaustubh.blockchain.controller;
 
-import com.kaustubh.blockchain.model.Car;
 import com.kaustubh.blockchain.model.AssetTransaction;
+import com.kaustubh.blockchain.model.CarInformation;
 import com.kaustubh.blockchain.service.CarService;
 import com.kaustubh.blockchain.service.TransactionService;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,26 +34,21 @@ public class TransactionController {
   }
 
   @PostMapping
-  public ResponseEntity<String> confirmTransaction(@RequestBody String transactionId)
+  public ResponseEntity<String> confirmTransaction(@RequestBody AssetTransaction transaction)
       throws InvalidKeySpecException, IOException {
-    return ResponseEntity.ok(this.transactionService.confirmTransaction(transactionId));
+    return ResponseEntity.ok(this.transactionService.confirmTransaction(transaction));
   }
+
   @PostMapping("/buyCar")
-  public ResponseEntity<String> buyCar(@RequestBody AssetTransaction assetTransactionRequest)
-      throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+  public ResponseEntity<String> buyCar(@RequestBody AssetTransaction assetTransactionRequest) {
 
     String receipt = transactionService.buyCar(assetTransactionRequest);
     return ResponseEntity.ok(receipt);
   }
 
   @GetMapping("/getCar")
-  public ResponseEntity<Car> getCar(@RequestParam String vin) throws Exception {
-    Car car = transactionService.getCar(vin);
-
-    if (Objects.isNull(car)) {
-      car = carService.getCar(vin);
-    }
-
+  public ResponseEntity<CarInformation> getCar(@RequestParam String vin) throws Exception {
+    CarInformation car = transactionService.getCar(vin);
     return ResponseEntity.ok().body(car);
   }
 
